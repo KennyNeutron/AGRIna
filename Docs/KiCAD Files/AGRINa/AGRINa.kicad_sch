@@ -4285,6 +4285,19 @@
 		)
 		(uuid "ce5785fe-53f7-4a93-9cc3-da91862613f2")
 	)
+	(text "AquaMate Schematic Diagram"
+		(exclude_from_sim no)
+		(at 134.62 19.05 0)
+		(effects
+			(font
+				(size 5.08 5.08)
+				(thickness 0.508)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "d08b46ef-c720-469f-aa28-4b403242ceff")
+	)
 	(text "SCK"
 		(exclude_from_sim no)
 		(at 260.35 40.894 90)
