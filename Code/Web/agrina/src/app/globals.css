@@ -1,47 +1,43 @@
 /* src/app/globals.css */
 @import "tailwindcss";
 
-/* Global color system and font tokens */
+/* Brand system */
 :root {
   --surface: #ffffff;
   --text: #3f3f46;
 
-  /* AGRIna brand greens */
-  --brand: #6ea348; /* primary */
+  /* AGRIna greens */
+  --brand: #6ea348;
+  --brand-hover: #7ebd51;
   --brand-strong: #5b8a3c;
-  --brand-hover: #79b34f;
 
-  /* Subtle grays for borders and placeholders */
+  /* Neutrals */
   --line: #e5e7eb;
   --muted: #6b7280;
+  --pill: #eff6eb; /* very light green for active pill */
+  --pill-ring: #d8e9cf; /* border for active pill */
 }
 
 @theme inline {
   --color-surface: var(--surface);
   --color-text: var(--text);
   --color-brand: var(--brand);
-  --color-brand-strong: var(--brand-strong);
   --color-brand-hover: var(--brand-hover);
+  --color-brand-strong: var(--brand-strong);
   --color-line: var(--line);
   --color-muted: var(--muted);
+  --color-pill: var(--pill);
+  --color-pill-ring: var(--pill-ring);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
+  --radius-lg: 0.875rem;
   --radius-xl: 1rem;
+  --shadow-card: 0 10px 30px rgba(2, 17, 8, 0.07);
 }
 
-/* Dark scheme support if needed later */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface: #0a0a0a;
-    --text: #e5e7eb;
-    --line: #262626;
-    --muted: #a3a3a3;
-  }
-}
-
-/* Base page styles: pure white so logo card and access card match */
+/* Light and clean base */
 body {
   background: var(--surface);
   color: var(--text);
