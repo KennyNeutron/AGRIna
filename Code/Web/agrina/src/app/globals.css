@@ -1,0 +1,51 @@
+/* src/app/globals.css */
+@import "tailwindcss";
+
+/* Global color system and font tokens */
+:root {
+  --surface: #ffffff;
+  --text: #3f3f46;
+
+  /* AGRIna brand greens */
+  --brand: #6ea348; /* primary */
+  --brand-strong: #5b8a3c;
+  --brand-hover: #79b34f;
+
+  /* Subtle grays for borders and placeholders */
+  --line: #e5e7eb;
+  --muted: #6b7280;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-hover: var(--brand-hover);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-xl: 1rem;
+}
+
+/* Dark scheme support if needed later */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #0a0a0a;
+    --text: #e5e7eb;
+    --line: #262626;
+    --muted: #a3a3a3;
+  }
+}
+
+/* Base page styles: pure white so logo card and access card match */
+body {
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans",
+    sans-serif;
+}
