@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { signOutAction } from "@/app/login/actions";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -86,13 +87,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             {/* Footer */}
             <div className="mt-auto space-y-3 p-4">
-              <button
-                type="button"
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[color:var(--color-line)] bg-white py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 active:bg-zinc-100 transition"
-              >
-                <SignOutIcon className="h-4 w-4" />
-                <span>Sign Out</span>
-              </button>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-[color:var(--color-line)] bg-white py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 active:bg-zinc-100 transition"
+                >
+                  <SignOutIcon className="h-4 w-4" />
+                  <span>Sign Out</span>
+                </button>
+              </form>
 
               <div className="rounded-xl border border-[color:var(--color-line)] bg-white p-3 text-center">
                 <div className="text-xs text-zinc-500">AGRIna Platform</div>
@@ -174,7 +177,7 @@ function NavLink(props: {
   );
 }
 
-/* Inline icons */
+/* Inline icons (kept local so no external deps) */
 function ShieldIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none">
