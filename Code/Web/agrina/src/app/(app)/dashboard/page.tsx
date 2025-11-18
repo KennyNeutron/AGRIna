@@ -2,6 +2,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 
 type RangeKey = "24h" | "7d" | "30d";
 
@@ -178,7 +179,7 @@ function QuickStatCard(props: { label: string; value: string; hint: string }) {
 function SoilMetricCard({ metric }: { metric: SoilMetric }) {
   const { key, label, value, hint } = metric;
 
-  let icon: JSX.Element | null = null;
+  let icon: ReactNode | null = null;
   if (key === "N") icon = <AtomNIcon className="h-5 w-5" />;
   else if (key === "P") icon = <AtomPIcon className="h-5 w-5" />;
   else if (key === "K") icon = <AtomKIcon className="h-5 w-5" />;

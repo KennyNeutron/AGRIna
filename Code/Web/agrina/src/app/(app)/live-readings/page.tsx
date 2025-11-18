@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 type Reading = {
   ts: string;
@@ -137,7 +138,7 @@ export default function LiveReadingsPage() {
 
 type MetricTileProps = {
   label: string;
-  icon: JSX.Element;
+  icon: ReactNode;
   value: string;
 };
 
