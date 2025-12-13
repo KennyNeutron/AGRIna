@@ -20,7 +20,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleSignIn = () => {
-    router.push("/");
+    router.push("/home");
   };
 
   return (
