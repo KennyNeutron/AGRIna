@@ -1,5 +1,6 @@
 "use client";
 
+import { login } from "./actions";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
@@ -12,15 +13,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignIn = () => {
-    router.push("/home");
+  const handleSubmit = (formData: FormData) => {
+    setError(null);
+    startTransition(async () => {
+      const result = await login(formData);
+      if (result?.error) {
+        setError(result.error);
+      }
+    });
   };
 
   return (
@@ -48,44 +56,66 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20"
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-foreground">
-                Password
+          <form action={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-foreground">
+                Email
               </Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-primary hover:text-primary/90 transition-colors"
-              >
-                Forgot password?
-              </Link>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="name@example.com"
+                required
+                className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20"
+              />
             </div>
-            <Input
-              id="password"
-              type="password"
-              className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20"
-            />
-          </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-foreground">
+                  Password
+                </Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-primary hover:text-primary/90 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20"
+              />
+            </div>
+
+            {error && (
+              <div className="text-sm text-destructive font-medium text-center bg-destructive/10 p-2 rounded-md border border-destructive/20">
+                {error}
+              </div>
+            )}
+
+            <div className="mt-4 flex flex-col space-y-4">
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 group"
+              >
+                {isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 group"
-            onClick={handleSignIn}
-          >
-            Sign In
-            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-          </Button>
           <div className="text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link
