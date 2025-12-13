@@ -15,6 +15,7 @@ import {
   User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { signout } from "@/app/(auth)/login/actions";
 
 const navItems = [
   {
@@ -149,6 +150,7 @@ export function Sidebar() {
         <Button
           variant="outline"
           className="w-full justify-center gap-2 text-muted-foreground hover:text-foreground"
+          onClick={() => signout()}
         >
           <LogOut className="h-4 w-4" />
           Sign Out

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   Card,
   CardContent,
@@ -261,51 +263,59 @@ export default function HomePage() {
 
           {/* Quick Actions */}
           <div className="grid gap-4 md:grid-cols-3">
-            <Card className="bg-card/50 hover:bg-card hover:border-primary/50 transition-colors cursor-pointer group">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Activity className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                    View Live Data
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Monitor real-time readings from all your devices
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 hover:bg-card hover:border-orange-500/50 transition-colors cursor-pointer group">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <BarChart className="h-6 w-6 text-orange-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground group-hover:text-orange-500 transition-colors">
-                    Historical Data
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Analyze trends and view deployment history
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 hover:bg-card hover:border-blue-500/50 transition-colors cursor-pointer group">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Download className="h-6 w-6 text-blue-500" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground group-hover:text-blue-500 transition-colors">
-                    Export Data
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Download your data in CSV or PDF format
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <Link href="/live-readings" className="block">
+              <Card className="bg-card/50 hover:bg-card hover:border-primary/50 transition-colors cursor-pointer group h-full">
+                <CardContent className="p-6 flex flex-col items-center justify-center text-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Activity className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                      View Live Data
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Monitor real-time readings from all your devices
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/history" className="block">
+              <Card className="bg-card/50 hover:bg-card hover:border-orange-500/50 transition-colors cursor-pointer group h-full">
+                <CardContent className="p-6 flex flex-col items-center justify-center text-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <BarChart className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground group-hover:text-orange-500 transition-colors">
+                      Historical Data
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Analyze trends and view deployment history
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/export" className="block">
+              <Card className="bg-card/50 hover:bg-card hover:border-blue-500/50 transition-colors cursor-pointer group h-full">
+                <CardContent className="p-6 flex flex-col items-center justify-center text-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Download className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground group-hover:text-blue-500 transition-colors">
+                      Export Data
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Download your data in CSV or PDF format
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </TabsContent>
 

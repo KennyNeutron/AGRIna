@@ -37,8 +37,20 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect /home route
-  if (request.nextUrl.pathname.startsWith("/home") && !user) {
+  // Protect dashboard routes
+  const protectedPaths = [
+    "/home",
+    "/live-readings",
+    "/history",
+    "/export",
+    "/settings",
+    "/about",
+  ];
+  const isProtectedPath = protectedPaths.some((path) =>
+    request.nextUrl.pathname.startsWith(path)
+  );
+
+  if (isProtectedPath && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
