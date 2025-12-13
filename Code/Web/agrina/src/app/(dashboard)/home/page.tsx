@@ -186,7 +186,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Health & Battery */}
+                {/* Health Only */}
                 <div className="space-y-4 pt-4 border-t border-border/50">
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-medium">
@@ -199,23 +199,10 @@ export default function HomePage() {
                       indicatorClassName="bg-primary"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-medium">
-                      <span className="flex items-center gap-1">
-                        <Battery className="h-3 w-3" /> Battery
-                      </span>
-                      <span className="text-orange-500">87%</span>
-                    </div>
-                    <Progress
-                      value={87}
-                      className="h-1.5 bg-muted"
-                      indicatorClassName="bg-orange-500"
-                    />
-                  </div>
                 </div>
 
                 {/* Sensor Readings */}
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-border/50">
                   <div className="space-y-1">
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       <Droplets className="h-3 w-3" /> pH Level
@@ -246,6 +233,14 @@ export default function HomePage() {
                     </div>
                     <div className="text-lg font-bold text-foreground">
                       29 ppm
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Activity className="h-3 w-3" /> Potassium (K)
+                    </div>
+                    <div className="text-lg font-bold text-foreground">
+                      35 ppm
                     </div>
                   </div>
                 </div>
