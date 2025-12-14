@@ -101,22 +101,19 @@ export default function AboutPage() {
               name: "Rica Mae C. Perfas",
               role: "Hardware & Electronics",
               badge: "Project Engineer",
-              img: "/profile1.jpg",
-              initials: "RMCP",
+              img: "/profile1.jpeg",
             },
             {
               name: "Alsheena A. Sali",
               role: "Software Development",
               badge: "Project Engineer",
-              img: "/profile2.jpg",
-              initials: "AAS",
+              img: "/profile2.png",
             },
             {
               name: "A.G Ross A. Demetillo",
               role: "Systems Integration",
               badge: "Project Engineer",
-              img: "/profile3.jpg",
-              initials: "ARAD",
+              img: "/profile3.jpeg",
             },
           ].map((member) => (
             <div
@@ -128,16 +125,13 @@ export default function AboutPage() {
                   src={member.img}
                   alt={member.name}
                   fill
-                  className="rounded-full object-cover border-4 border-background shadow-lg"
+                  className="rounded-full object-cover border-4 border-green-600 dark:border-green-500 shadow-lg"
                 />
                 <div className="absolute -bottom-1 -right-1 bg-green-600 text-white p-1 rounded-full shadow-sm">
                   <Zap className="h-3 w-3" />
                 </div>
               </div>
               <div className="text-center space-y-1">
-                <div className="text-sm font-bold text-amber-700/50 dark:text-amber-500/50 tracking-widest mb-1">
-                  {member.initials}
-                </div>
                 <h3 className="font-bold text-lg text-foreground">
                   {member.name}
                 </h3>
