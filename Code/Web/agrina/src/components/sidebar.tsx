@@ -56,7 +56,15 @@ const navItems = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  profile?: {
+    full_name: string;
+    email: string;
+    role: string;
+  } | null;
+}
+
+export function Sidebar({ profile }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -86,16 +94,18 @@ export function Sidebar() {
         </div>
         <div className="flex-1 overflow-hidden">
           <h2 className="truncate text-sm font-semibold text-foreground">
-            System Administrator
+            {profile?.full_name || "System User"}
           </h2>
-          <p className="truncate text-xs text-primary">admin@agrina.system</p>
+          <p className="truncate text-xs text-primary">
+            {profile?.email || "user@agrina.system"}
+          </p>
           <div className="mt-1 flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">
-              System Administrator
+            <span className="text-[10px] text-muted-foreground capitalized">
+              {profile?.role || "User"}
             </span>
             <span className="h-1 w-1 rounded-full bg-primary/50" />
             <span className="text-[10px] text-muted-foreground">
-              All Access
+              {profile?.role === "admin" ? "All Access" : "Standard Access"}
             </span>
           </div>
         </div>

@@ -1,6 +1,5 @@
-"use client";
-
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/server";
 
 import {
   Card,
@@ -24,7 +23,6 @@ import {
   Users,
   Activity,
   CheckCircle,
-  Battery,
   Thermometer,
   Droplets,
   Wind,
@@ -34,22 +32,65 @@ import {
   Download,
 } from "lucide-react";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Fetch Stats
+  const { count: devicesCount } = await supabase
+    .from("devices")
+    .select("*", { count: "exact", head: true });
+
+  const { count: activeAlerts } = await supabase
+    .from("alerts")
+    .select("*", { count: "exact", head: true })
+    .eq("is_read", false);
+
+  const { count: readingsCount } = await supabase
+    .from("sensor_readings")
+    .select("*", { count: "exact", head: true }); // Maybe filter last 24h? For now total.
+
+  // Fetch Latest Device Data (Single)
+  const { data: latestReading } = await supabase
+    .from("sensor_readings")
+    .select("*, devices(*)")
+    .order("recorded_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("*").eq("id", user.id).single()
+    : { data: null };
+
+  const activeDeployments = 1; // Placeholder until deployments logic refined
+
+  // Safe defaults
+  const deviceName = latestReading?.devices?.name || "No Device";
+  const deviceSerial = latestReading?.devices?.serial_number || "N/A";
+  const lastSeen = latestReading?.recorded_at
+    ? new Date(latestReading.recorded_at).toLocaleTimeString()
+    : "Never";
+
   return (
     <div className="space-y-8 fade-in">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Welcome back, System Administrator!
+            Welcome back, {profile?.full_name || "User"}!
           </h1>
           <p className="text-muted-foreground mt-1">
-            Monitoring <span className="font-semibold text-primary">1</span>{" "}
+            Monitoring{" "}
+            <span className="font-semibold text-primary">
+              {devicesCount || 0}
+            </span>{" "}
             total system devices
           </p>
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
             <span className="font-medium text-primary">
-              System Administrator
+              {profile?.role || "User"}
             </span>
             <span>•</span>
             <span>AGRina System</span>
@@ -61,6 +102,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Note: Select is client-side only usually, but static rendering works. Interaction needs client component wrapper. For now purely visual. */}
           <Select defaultValue="24h">
             <SelectTrigger className="w-[120px] bg-card">
               <SelectValue placeholder="Period" />
@@ -86,7 +128,7 @@ export default function HomePage() {
               <Wifi className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <div className="text-2xl font-bold">1</div>
+              <div className="text-2xl font-bold">{devicesCount || 0}</div>
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 Online Devices
               </p>
@@ -99,7 +141,7 @@ export default function HomePage() {
               <Users className="h-6 w-6 text-orange-500" />
             </div>
             <div>
-              <div className="text-2xl font-bold">1</div>
+              <div className="text-2xl font-bold">{activeDeployments}</div>
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 Active Deployments
               </p>
@@ -112,9 +154,9 @@ export default function HomePage() {
               <Activity className="h-6 w-6 text-blue-500" />
             </div>
             <div>
-              <div className="text-2xl font-bold">1</div>
+              <div className="text-2xl font-bold">{readingsCount || 0}</div>
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                Recent Readings
+                Total Readings
               </p>
             </div>
           </CardContent>
@@ -125,7 +167,9 @@ export default function HomePage() {
               <CheckCircle className="h-6 w-6 text-green-500" />
             </div>
             <div>
-              <div className="text-2xl font-bold">100%</div>
+              <div className="text-2xl font-bold">
+                {activeAlerts === 0 ? "100%" : "Attention"}
+              </div>
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 System Health
               </p>
@@ -147,118 +191,118 @@ export default function HomePage() {
         </div>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6">
             {/* Device Card */}
-            <Card className="overflow-hidden border-border bg-gradient-to-br from-card to-card/50 hover:shadow-lg transition-all duration-300">
-              <div className="absolute top-0 right-0 p-4">
-                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_theme(colors.green.500)]" />
+            {latestReading ? (
+              <Card className="overflow-hidden border-border bg-gradient-to-br from-card to-card/50 hover:shadow-lg transition-all duration-300">
+                <div className="absolute top-0 right-0 p-4">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_theme(colors.green.500)]" />
+                </div>
+                <CardHeader className="bg-muted/30 pb-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Wifi className="h-4 w-4 text-primary" />
+                        {deviceName}
+                      </CardTitle>
+                      <CardDescription className="text-xs font-mono mt-1 text-primary/80">
+                        {deviceSerial}
+                      </CardDescription>
+                    </div>
+                    <div className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                      Connected
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {/* Device Info */}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <div className="h-4 w-4 flex items-center justify-center">
+                        <div className="h-1.5 w-1.5 rounded-full bg-foreground/50" />
+                      </div>
+                      <span>Production Field</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Activity className="h-3.5 w-3.5" />
+                      <span>
+                        Signal Quality: {latestReading.signal_quality || "N/A"}%
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      <span>Last reading: {lastSeen}</span>
+                    </div>
+                  </div>
+
+                  {/* Health Only */}
+                  <div className="space-y-4 pt-4 border-t border-border/50">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs font-medium">
+                        <span>Device Health</span>
+                        <span className="text-primary">100%</span>
+                      </div>
+                      <Progress
+                        value={100}
+                        className="h-1.5 bg-muted"
+                        indicatorClassName="bg-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Sensor Readings */}
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-border/50">
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Droplets className="h-3 w-3" /> pH Level
+                      </div>
+                      <div className="text-lg font-bold text-foreground">
+                        {latestReading.ph}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Thermometer className="h-3 w-3" /> Temperature
+                      </div>
+                      <div className="text-lg font-bold text-foreground">
+                        {latestReading.temperature}°C
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Wind className="h-3 w-3" /> Nitrogen (N)
+                      </div>
+                      <div className="text-lg font-bold text-foreground">
+                        {latestReading.nitrogen} ppm
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Zap className="h-3 w-3" /> Phosphorus (P)
+                      </div>
+                      <div className="text-lg font-bold text-foreground">
+                        {latestReading.phosphorus} ppm
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Activity className="h-3 w-3" /> Potassium (K)
+                      </div>
+                      <div className="text-lg font-bold text-foreground">
+                        {latestReading.potassium} ppm
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground text-center pt-2">
+                    Updated: {lastSeen}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="p-12 text-center border border-dashed rounded-lg text-muted-foreground">
+                No active devices or data found.
               </div>
-              <CardHeader className="bg-muted/30 pb-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Wifi className="h-4 w-4 text-primary" />
-                      AGRina Demo Device
-                    </CardTitle>
-                    <CardDescription className="text-xs font-mono mt-1 text-primary/80">
-                      AGR-DEMO001
-                    </CardDescription>
-                  </div>
-                  <div className="bg-primary/20 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
-                    Connected
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-6">
-                {/* Device Info */}
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <div className="h-4 w-4 flex items-center justify-center">
-                      <div className="h-1.5 w-1.5 rounded-full bg-foreground/50" />
-                    </div>
-                    <span>Demo Field - System Testing</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Activity className="h-3.5 w-3.5" />
-                    <span>AGRina System Testing</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    <span>Last seen: 1h ago</span>
-                  </div>
-                </div>
-
-                {/* Health Only */}
-                <div className="space-y-4 pt-4 border-t border-border/50">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-medium">
-                      <span>Device Health</span>
-                      <span className="text-primary">100%</span>
-                    </div>
-                    <Progress
-                      value={100}
-                      className="h-1.5 bg-muted"
-                      indicatorClassName="bg-primary"
-                    />
-                  </div>
-                </div>
-
-                {/* Sensor Readings */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-border/50">
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Droplets className="h-3 w-3" /> pH Level
-                    </div>
-                    <div className="text-lg font-bold text-foreground">
-                      6.56
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Thermometer className="h-3 w-3" /> Temperature
-                    </div>
-                    <div className="text-lg font-bold text-foreground">
-                      24.8°C
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Wind className="h-3 w-3" /> Nitrogen (N)
-                    </div>
-                    <div className="text-lg font-bold text-foreground">
-                      44 ppm
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Zap className="h-3 w-3" /> Phosphorus (P)
-                    </div>
-                    <div className="text-lg font-bold text-foreground">
-                      29 ppm
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Activity className="h-3 w-3" /> Potassium (K)
-                    </div>
-                    <div className="text-lg font-bold text-foreground">
-                      35 ppm
-                    </div>
-                  </div>
-                </div>
-                <div className="text-[10px] text-muted-foreground text-center pt-2">
-                  Updated: 12:58:33 AM
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Empty State / Placeholder for right column */}
-            <div className="grid grid-rows-2 gap-6">
-              {/* Placeholder for Map or Other content */}
-              {/* <div className="rounded-xl border border-border border-dashed bg-muted/20 flex items-center justify-center text-muted-foreground">
-                        Map View Placeholder
-                    </div> */}
-            </div>
+            )}
           </div>
 
           {/* Quick Actions */}
