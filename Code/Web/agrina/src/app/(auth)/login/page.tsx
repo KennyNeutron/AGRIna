@@ -42,7 +42,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1 text-center">
           <div className="mx-auto mb-4 bg-muted p-2 rounded-xl border border-border inline-block relative h-16 w-16 overflow-hidden">
             <Image
-              src="/logo.jpg"
+              src="/logo.png"
               alt="AGRina Logo"
               fill
               className="object-cover"

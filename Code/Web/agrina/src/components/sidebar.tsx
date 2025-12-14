@@ -73,7 +73,7 @@ export function Sidebar({ profile }: SidebarProps) {
       <div className="flex items-center gap-4 p-6 border-b border-border/50">
         <div className="relative h-12 w-12 overflow-hidden rounded-full border border-border bg-muted p-1">
           <Image
-            src="/logo.jpg"
+            src="/logo.png"
             alt="Logo"
             fill
             className="object-cover rounded-full"

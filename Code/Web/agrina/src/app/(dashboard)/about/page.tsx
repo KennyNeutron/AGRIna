@@ -153,14 +153,18 @@ export default function AboutPage() {
       {/* Contact Information */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Email", value: "info@agrina.ph", icon: Mail },
-          { label: "Phone", value: "+63 (02) 123-4567", icon: Phone },
+          { label: "Email", value: "agrinamain.111@gmail.com", icon: Mail },
+          { label: "Phone", value: "+63 9631474262", icon: Phone },
           {
             label: "Address",
-            value: "University Research Center, Philippines",
+            value: "Notre Dame of Midsayap College",
             icon: MapPin,
           },
-          { label: "Website", value: "www.agrina.ph", icon: Globe },
+          {
+            label: "Website",
+            value: "https://agrina.vercel.app/",
+            icon: Globe,
+          },
         ].map((item) => (
           <Card key={item.label}>
             <CardContent className="p-4 flex items-center gap-4">
