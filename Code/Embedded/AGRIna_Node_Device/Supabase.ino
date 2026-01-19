@@ -1,5 +1,5 @@
-void SupabaseUpdate(float py_ph, float py_temp, int py_nitrogen, int py_phosphorus, int py_potassium){
-      // Check WiFi Status
+void SupabaseUpdate(float py_ph, float py_temp, int py_nitrogen, int py_phosphorus, int py_potassium) {
+  // Check WiFi Status
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
 
@@ -10,7 +10,7 @@ void SupabaseUpdate(float py_ph, float py_temp, int py_nitrogen, int py_phosphor
     http.addHeader("Content-Type", "application/json");
     http.addHeader("apikey", supabase_key);
     http.addHeader("Authorization", String("Bearer ") + supabase_key);
-    http.addHeader("Prefer", "return=minimal"); // Don't return the inserted row to save bandwidth
+    http.addHeader("Prefer", "return=minimal");  // Don't return the inserted row to save bandwidth
 
     // Create Dummy Data
     float ph = py_ph;
@@ -18,7 +18,7 @@ void SupabaseUpdate(float py_ph, float py_temp, int py_nitrogen, int py_phosphor
     int nitrogen = py_nitrogen;
     int phosphorus = py_phosphorus;
     int potassium = py_potassium;
-    int signal =  random(80, 100);  
+    int signal = random(80, 100);
 
     // Construct JSON Payload manually to avoid heavy libraries if not needed
     // Using String for simplicity in this test
@@ -47,10 +47,9 @@ void SupabaseUpdate(float py_ph, float py_temp, int py_nitrogen, int py_phosphor
       Serial.println(httpResponseCode);
     }
 
-    http.end(); // Free resources
+    http.end();  // Free resources
 
   } else {
     Serial.println("WiFi Disconnected");
   }
-
 }

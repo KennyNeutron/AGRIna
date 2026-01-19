@@ -32,20 +32,20 @@ void hexDump(const uint8_t* buf, size_t len) {
   Serial.println();
 }
 
-void setup(){
+void setup() {
   Serial.begin(115200);
 
-    Serial.println(F("AGRIna LoRa TX (Arduino Nano + RA-02) starting..."));
+  Serial.println(F("AGRIna LoRa TX (Arduino Nano + RA-02) starting..."));
 
   // Set initial values for the struct (for now, static demo values)
   // Tip: Header/Footer can be used for quick packet framing checks
   Data_AGRIna.Header = 0x55;
-  Data_AGRIna.AN_DeviceID = 0x01;
-//   Data_AGRIna.AN_SoilTemperature = 27.5f;
-//   Data_AGRIna.AN_pH = 6.80f;
-//   Data_AGRIna.AN_Nitrogen = 20;  // mg/kg or your chosen unit
-//   Data_AGRIna.AN_Phosphorus = 10;
-//   Data_AGRIna.AN_Potassium = 15;
+  Data_AGRIna.AN_DeviceID = 0x02;
+  //   Data_AGRIna.AN_SoilTemperature = 27.5f;
+  //   Data_AGRIna.AN_pH = 6.80f;
+  //   Data_AGRIna.AN_Nitrogen = 20;  // mg/kg or your chosen unit
+  //   Data_AGRIna.AN_Phosphorus = 10;
+  //   Data_AGRIna.AN_Potassium = 15;
   Data_AGRIna.Footer = 0xAA;
 
   // Configure LoRa pins and radio
@@ -72,10 +72,10 @@ void setup(){
   SoilSensor_setup();
 }
 
-void loop(){
+void loop() {
   SoilSensor_loop();
 
-    const uint32_t now = millis();
+  const uint32_t now = millis();
   if (now - lastTx >= TX_INTERVAL_MS) {
     lastTx = now;
 
