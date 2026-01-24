@@ -40,7 +40,7 @@ void setup() {
   // Set initial values for the struct (for now, static demo values)
   // Tip: Header/Footer can be used for quick packet framing checks
   Data_AGRIna.Header = 0x55;
-  Data_AGRIna.AN_DeviceID = 0x02;
+  Data_AGRIna.AN_DeviceID = 0x03;
   //   Data_AGRIna.AN_SoilTemperature = 27.5f;
   //   Data_AGRIna.AN_pH = 6.80f;
   //   Data_AGRIna.AN_Nitrogen = 20;  // mg/kg or your chosen unit
