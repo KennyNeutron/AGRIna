@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { NewDeploymentDialog } from "./new-deployment-dialog";
+
 import {
   Select,
   SelectContent,
@@ -20,6 +21,8 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Calendar as CalendarIcon,
   Search,
@@ -181,6 +184,37 @@ const parameterConfig: Record<
 export default function HistoryPage() {
   const [activeTab, setActiveTab] = useState("trends");
   const [selectedParameter, setSelectedParameter] = useState("ph");
+  const [devices, setDevices] = useState<any[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchDevices = async () => {
+      const { data } = await supabase
+        .from("devices")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (data) setDevices(data);
+    };
+
+    // Fetch on mount
+    fetchDevices();
+
+    // Subscribe to changes (optional, but good for "New Deployment" appearing instantly if server action revalidates doesn't trigger client refresh automatically)
+    const channel = supabase
+      .channel("devices_history")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "devices" },
+        (payload) => {
+          fetchDevices();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const activeConfig = parameterConfig[selectedParameter];
   const ActiveIcon = activeConfig.icon;
@@ -200,10 +234,7 @@ export default function HistoryPage() {
             Analyze trends and manage deployment records for your devices
           </p>
         </div>
-        <Button className="gap-2 bg-green-600 hover:bg-green-700 text-white">
-          <Plus className="h-4 w-4" />
-          New Deployment
-        </Button>
+        <NewDeploymentDialog />
       </div>
 
       {/* Filters */}
@@ -441,91 +472,113 @@ export default function HistoryPage() {
 
         {/* Deployments Tab */}
         <TabsContent value="deployments">
-          {/* ... Deployment content - keeping same */}
-          <Card className="border-border">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row justify-between gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      AGRina System Testing
-                    </h3>
-                    <p className="text-xs text-primary font-mono mt-1">
-                      DEP-DEMO001
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4">
-                        <FileText className="h-3.5 w-3.5" />
-                      </div>
-                      <span>
-                        Device:{" "}
-                        <span className="text-foreground font-medium">
-                          AGRina Demo Device
-                        </span>
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4"></div>
-                      <span>
-                        Crop:{" "}
-                        <span className="text-foreground font-medium">
-                          Test Rice Variety
-                        </span>
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4">
-                        <MapPin className="h-3.5 w-3.5" />
-                      </div>
-                      <span>Location: 14.5995, 120.9842</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 md:text-right">
-                  <div>
-                    <span className="inline-flex items-center rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-0.5 text-xs font-semibold text-green-500 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                      Active
-                    </span>
-                  </div>
-
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2 md:justify-end">
-                      <CalendarIcon className="h-3.5 w-3.5" />
-                      <span>Started: Dec 07, 2025</span>
-                    </div>
-                    <div className="flex items-center gap-2 md:justify-end">
-                      <TrendingUp className="h-3.5 w-3.5" />
-                      <span>Readings: 31</span>
-                    </div>
-                  </div>
-                </div>
+          <div className="space-y-4">
+            {devices.length === 0 ? (
+              <div className="p-8 text-center border-dashed border rounded-lg text-muted-foreground">
+                No deployments found. Add a new device to get started.
               </div>
-              <Separator className="my-6" />
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                    Description:
-                  </h4>
-                  <p className="text-sm text-foreground">
-                    System demonstration field for testing device functionality
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                    Notes:
-                  </h4>
-                  <p className="text-sm text-foreground">
-                    Demo deployment for system testing and calibration
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            ) : (
+              devices.map((device: any) => (
+                <Card key={device.id} className="border-border">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row justify-between gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-primary" />
+                            {device.name}
+                          </h3>
+                          <p className="text-xs text-primary font-mono mt-1">
+                            {device.serial_number}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <div className="w-4">
+                              <FileText className="h-3.5 w-3.5" />
+                            </div>
+                            <span>
+                              Device Status:{" "}
+                              <span className="text-foreground font-medium">
+                                {device.status}
+                              </span>
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4"></div>
+                            <span>
+                              Sync:{" "}
+                              <span className="text-foreground font-medium">
+                                {device.auto_sync ? "Auto" : "Manual"}
+                              </span>
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4">
+                              <MapPin className="h-3.5 w-3.5" />
+                            </div>
+                            <span>Field Location: Active</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 md:text-right">
+                        <div>
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                              device.status === "Active"
+                                ? "border-green-500/20 bg-green-500/10 text-green-500"
+                                : "border-yellow-500/20 bg-yellow-500/10 text-yellow-500"
+                            }`}
+                          >
+                            {device.status}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2 md:justify-end">
+                            <CalendarIcon className="h-3.5 w-3.5" />
+                            <span>
+                              Added:{" "}
+                              {new Date(device.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 md:justify-end">
+                            <TrendingUp className="h-3.5 w-3.5" />
+                            <span>
+                              Interval: {device.update_interval_seconds}s
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <Separator className="my-6" />
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                          System Info:
+                        </h4>
+                        <p className="text-sm text-foreground">
+                          Firmware: {device.firmware_version || "Unknown"}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                          Last Seen:
+                        </h4>
+                        <p className="text-sm text-foreground">
+                          {device.last_seen
+                            ? new Date(device.last_seen).toLocaleString()
+                            : "Never"}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </TabsContent>
 
         {/* Raw Data Logs Tab */}
