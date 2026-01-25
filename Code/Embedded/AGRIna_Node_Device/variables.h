@@ -16,6 +16,12 @@ const char* supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 // Device Configuration
 // ID of "AGR-DEMO001" or similar. You must fetch this from your 'devices' table.
 // Using a placeholder UUID for now. REPLACE THIS with a valid device_id from your DB.
-const char* device_id = "e95e70fe-5530-42ff-b4ac-d817e1e61c4b";
+// const char* device_id = "e95e70fe-5530-42ff-b4ac-d817e1e61c4b"; //legacy variable [not in use anymore]
+
+
+//Get device ID from Supabase devices table
+const char* device1_id = "16e6b082-2cdf-436d-b703-069cc04021e7";
+const char* device2_id = "e95e70fe-5530-42ff-b4ac-d817e1e61c4b";
+const char* device3_id = "b38994e2-8831-4c6f-8811-019653cff282";
 
 // --------------------------------------------------------------------------------

@@ -22,8 +22,27 @@ void SupabaseUpdate(float py_ph, float py_temp, int py_nitrogen, int py_phosphor
 
     // Construct JSON Payload manually to avoid heavy libraries if not needed
     // Using String for simplicity in this test
+
+    String device_id_payload = "";
+
+    switch(rxDeviceID){
+      case 1:
+        device_id_payload = String(device1_id);
+        break;
+      case 2:
+        device_id_payload = String(device2_id);
+        break;
+      case 3:
+        device_id_payload = String(device3_id);
+        break;
+      default:
+        device_id_payload = "deviceID NOT RECOGNIZED";
+        break;
+    }
+
+
     String payload = "{";
-    payload += "\"device_id\": \"" + String(device_id) + "\",";
+    payload += "\"device_id\": \"" + device_id_payload + "\",";
     payload += "\"ph\": " + String(ph) + ",";
     payload += "\"temperature\": " + String(temp) + ",";
     payload += "\"nitrogen\": " + String(nitrogen) + ",";

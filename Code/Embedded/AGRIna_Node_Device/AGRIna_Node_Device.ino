@@ -20,6 +20,8 @@ static const uint8_t kFooter = 0xAA;
 uint32_t last_update = 0;
 uint32_t Supabase_Update_Interval = 10000;
 
+uint8_t rxDeviceID = 0;
+
 void hexDump(const uint8_t* buf, size_t len) {
   for (size_t i = 0; i < len; i++) {
     if (i && (i % 16 == 0)) Serial.println();
@@ -128,6 +130,8 @@ void loop() {
   Serial.println(rx.AN_Phosphorus);
   Serial.print(F("Potassium: "));
   Serial.println(rx.AN_Potassium);
+
+  rxDeviceID=rx.AN_DeviceID;
 
   if ((millis() - last_update) > Supabase_Update_Interval) {
     Serial.println("\n\n\nSupa Update!!!\n\n\n");
