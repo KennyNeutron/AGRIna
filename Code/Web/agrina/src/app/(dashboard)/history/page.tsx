@@ -49,90 +49,12 @@ import {
   Legend,
 } from "recharts";
 
-// Mock Data for Chart with multiple parameters
-const data = [
-  { name: "Nov 15 09:32", pH: 6.4, temp: 24.5, n: 45, p: 28, k: 180 },
-  { name: "Nov 18 02:40", pH: 6.5, temp: 24.8, n: 48, p: 30, k: 185 },
-  { name: "Nov 21 21:36", pH: 6.6, temp: 25.1, n: 42, p: 29, k: 175 },
-  { name: "Nov 24 08:24", pH: 6.7, temp: 25.4, n: 46, p: 31, k: 190 },
-  { name: "Nov 27 04:30", pH: 6.5, temp: 24.9, n: 44, p: 28, k: 182 },
-  { name: "Nov 30 06:24", pH: 6.5, temp: 24.2, n: 47, p: 30, k: 188 },
-  { name: "Dec 03 09:59", pH: 6.8, temp: 23.8, n: 45, p: 29, k: 184 },
-  { name: "Dec 06 04:30", pH: 6.8, temp: 24.1, n: 49, p: 32, k: 192 },
-  { name: "Dec 09 22:54", pH: 6.5, temp: 23.9, n: 46, p: 28, k: 180 },
-  { name: "Dec 12 11:04", pH: 6.7, temp: 24.6, n: 43, p: 30, k: 186 },
-  { name: "Dec 14 21:42", pH: 6.6, temp: 25.2, n: 45, p: 31, k: 189 },
-];
-
-const logs = [
-  {
-    timestamp: "2025-12-14 21:42:51",
-    device: "AGRina Demo Device",
-    deviceId: "AGR-DEMO001",
-    owner: "AGRina System Testing",
-    ownerDesc: "System demonstration field for testing device functionality",
-    ph: 6.47,
-    temp: 23.8,
-    n: 45.0,
-    p: 30.0,
-    k: 175.0,
-  },
-  {
-    timestamp: "2025-12-14 15:49:50",
-    device: "AGRina Demo Device",
-    deviceId: "AGR-DEMO001",
-    owner: "Unassigned",
-    ownerDesc: "",
-    ph: 6.67,
-    temp: 24.8,
-    n: 48.0,
-    p: 26.0,
-    k: 185.0,
-  },
-  {
-    timestamp: "2025-12-14 15:49:48",
-    device: "AGRina Demo Device",
-    deviceId: "AGR-DEMO001",
-    owner: "AGRina System Testing",
-    ownerDesc: "System demonstration field for testing device functionality",
-    ph: 6.31,
-    temp: 23.4,
-    n: 47.0,
-    p: 26.0,
-    k: 178.0,
-  },
-  {
-    timestamp: "2025-12-13 08:45:51",
-    device: "AGRina Demo Device",
-    deviceId: "AGR-DEMO001",
-    owner: "AGRina System Testing",
-    ownerDesc: "System demonstration field for testing device functionality",
-    ph: 6.69,
-    temp: 23.1,
-    n: 41.0,
-    p: 30.0,
-    k: 186.0,
-  },
-  {
-    timestamp: "2025-12-12 11:04:51",
-    device: "AGRina Demo Device",
-    deviceId: "AGR-DEMO001",
-    owner: "AGRina System Testing",
-    ownerDesc: "System demonstration field for testing device functionality",
-    ph: 6.58,
-    temp: 24.8,
-    n: 40.0,
-    p: 30.0,
-    k: 175.0,
-  },
-];
-
 // Parameter Configuration
 const parameterConfig: Record<
   string,
   {
     label: string;
-    key: keyof (typeof data)[0];
+    key: string;
     domain: [number, number];
     unit: string;
     color: string;
@@ -141,7 +63,7 @@ const parameterConfig: Record<
 > = {
   ph: {
     label: "pH Level",
-    key: "pH",
+    key: "ph",
     domain: [5.5, 7.5],
     unit: "",
     color: "var(--primary)",
@@ -184,37 +106,100 @@ const parameterConfig: Record<
 export default function HistoryPage() {
   const [activeTab, setActiveTab] = useState("trends");
   const [selectedParameter, setSelectedParameter] = useState("ph");
+  const [timeRange, setTimeRange] = useState("24h");
   const [devices, setDevices] = useState<any[]>([]);
+  const [readings, setReadings] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
   const supabase = createClient();
 
+  const fetchDevices = async () => {
+    const { data } = await supabase
+      .from("devices")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (data) setDevices(data);
+  };
+
+  const fetchReadings = async () => {
+    let query = supabase
+      .from("sensor_readings")
+      .select("*, devices(name, serial_number)")
+      .order("recorded_at", { ascending: true }); // Ascending for chart
+
+    // Apply time filter
+    if (timeRange !== "all") {
+      const now = new Date();
+      let startTime = new Date();
+      switch (timeRange) {
+        case "1h":
+          startTime.setHours(now.getHours() - 1);
+          break;
+        case "24h":
+          startTime.setHours(now.getHours() - 24);
+          break;
+        case "7d":
+          startTime.setDate(now.getDate() - 7);
+          break;
+        case "30d":
+          startTime.setDate(now.getDate() - 30);
+          break;
+      }
+      query = query.gte("recorded_at", startTime.toISOString());
+    } else {
+      query = query.limit(500); // Safety limit for 'all'
+    }
+
+    const { data } = await query;
+
+    if (data) {
+      setReadings([...data].reverse()); // Store reverse for table (newest first)
+
+      // Transform for chart (need ascending)
+      const transformed = data.map((r) => ({
+        name: new Date(r.recorded_at).toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        ph: r.ph,
+        temp: r.temperature,
+        n: r.nitrogen,
+        p: r.phosphorus,
+        k: r.potassium,
+        device_name: r.devices?.name,
+      }));
+      setChartData(transformed);
+    }
+  };
+
   useEffect(() => {
-    const fetchDevices = async () => {
-      const { data } = await supabase
-        .from("devices")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (data) setDevices(data);
-    };
-
-    // Fetch on mount
     fetchDevices();
+    fetchReadings();
 
-    // Subscribe to changes (optional, but good for "New Deployment" appearing instantly if server action revalidates doesn't trigger client refresh automatically)
-    const channel = supabase
+    const channelDevices = supabase
       .channel("devices_history")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "devices" },
-        (payload) => {
-          fetchDevices();
-        },
+        () => fetchDevices(),
+      )
+      .subscribe();
+
+    const channelReadings = supabase
+      .channel("readings_history")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "sensor_readings" },
+        () => fetchReadings(),
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(channelDevices);
+      supabase.removeChannel(channelReadings);
     };
-  }, []);
+  }, [timeRange]); // Refetch when timeRange changes
 
   const activeConfig = parameterConfig[selectedParameter];
   const ActiveIcon = activeConfig.icon;
@@ -263,7 +248,11 @@ export default function HistoryPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Devices</SelectItem>
-                <SelectItem value="demo001">AGRina Demo Device</SelectItem>
+                {devices.map((d: any) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -304,15 +293,20 @@ export default function HistoryPage() {
           </div>
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">
-              Date Range
+              Time Range
             </label>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal text-muted-foreground bg-transparent"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              Pick a date range
-            </Button>
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Time Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1h">Last Hour</SelectItem>
+                <SelectItem value="24h">Last 24 Hours</SelectItem>
+                <SelectItem value="7d">Last 7 Days</SelectItem>
+                <SelectItem value="30d">Last 30 Days</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -350,7 +344,7 @@ export default function HistoryPage() {
             <Card>
               <CardContent className="p-6 flex items-center gap-4">
                 <div>
-                  <div className="text-2xl font-bold">32</div>
+                  <div className="text-2xl font-bold">{readings.length}</div>
                   <p className="text-xs text-muted-foreground">
                     Total Readings
                   </p>
@@ -363,7 +357,7 @@ export default function HistoryPage() {
             <Card>
               <CardContent className="p-6 flex items-center gap-4">
                 <div>
-                  <div className="text-2xl font-bold">29</div>
+                  <div className="text-2xl font-bold">--</div>
                   <p className="text-xs text-muted-foreground">Days of Data</p>
                 </div>
                 <div className="ml-auto p-2 bg-yellow-500/10 rounded-full">
@@ -387,7 +381,7 @@ export default function HistoryPage() {
             <Card>
               <CardContent className="p-6 flex items-center gap-4">
                 <div>
-                  <div className="text-2xl font-bold">1</div>
+                  <div className="text-2xl font-bold">{devices.length}</div>
                   <p className="text-xs text-muted-foreground">Deployments</p>
                 </div>
                 <div className="ml-auto p-2 bg-blue-500/10 rounded-full">
@@ -408,7 +402,7 @@ export default function HistoryPage() {
               <div className="h-[300px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
-                    data={data}
+                    data={chartData}
                     margin={{
                       top: 5,
                       right: 10,
@@ -426,7 +420,7 @@ export default function HistoryPage() {
                       fontSize={10}
                       tickLine={false}
                       axisLine={false}
-                      interval={1}
+                      interval={Math.ceil(chartData.length / 5)}
                       angle={0}
                       dy={10}
                     />
@@ -609,7 +603,7 @@ export default function HistoryPage() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 <h3 className="text-sm font-medium">Raw Sensor Data Logs</h3>
                 <span className="bg-muted px-2 py-0.5 rounded text-[10px] text-muted-foreground">
-                  32 readings
+                  {readings.length} readings
                 </span>
               </div>
             </CardHeader>
@@ -631,50 +625,61 @@ export default function HistoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {logs.map((log, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {log.timestamp}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-semibold">
-                          {log.device}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          {log.deviceId}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-medium">{log.owner}</span>
-                        <span className="text-[10px] text-muted-foreground line-clamp-1 max-w-[200px]">
-                          {log.ownerDesc}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-sm border border-border px-1.5 py-0.5 text-xs font-medium tabular-nums bg-green-500/10 text-green-600 dark:text-green-400">
-                        {log.ph.toFixed(2)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-sm border border-border px-1.5 py-0.5 text-xs font-medium tabular-nums text-blue-500 bg-blue-500/10">
-                        {log.temp.toFixed(1)}°C
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs tabular-nums">
-                      {log.n.toFixed(1)}
-                    </TableCell>
-                    <TableCell className="text-xs tabular-nums">
-                      {log.p.toFixed(1)}
-                    </TableCell>
-                    <TableCell className="text-xs tabular-nums">
-                      {log.k.toFixed(1)}
+                {readings.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="text-center h-24 text-muted-foreground"
+                    >
+                      No readings found.
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  readings.map((log: any, index: number) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {new Date(log.recorded_at).toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold">
+                            {log.devices?.name || "Unknown"}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {log.devices?.serial_number || "N/A"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">--</span>
+                          <span className="text-[10px] text-muted-foreground line-clamp-1 max-w-[200px]">
+                            --
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded-sm border border-border px-1.5 py-0.5 text-xs font-medium tabular-nums bg-green-500/10 text-green-600 dark:text-green-400">
+                          {log.ph.toFixed(2)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded-sm border border-border px-1.5 py-0.5 text-xs font-medium tabular-nums text-blue-500 bg-blue-500/10">
+                          {log.temperature.toFixed(1)}°C
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-xs tabular-nums">
+                        {log.nitrogen.toFixed(1)}
+                      </TableCell>
+                      <TableCell className="text-xs tabular-nums">
+                        {log.phosphorus.toFixed(1)}
+                      </TableCell>
+                      <TableCell className="text-xs tabular-nums">
+                        {log.potassium.toFixed(1)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </Card>
