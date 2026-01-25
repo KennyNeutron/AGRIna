@@ -41,9 +41,14 @@ interface Device {
 interface LiveDashboardProps {
   initialReading: Reading | null;
   device: Device;
+  totalDevices?: number;
 }
 
-export function LiveDashboard({ initialReading, device }: LiveDashboardProps) {
+export function LiveDashboard({
+  initialReading,
+  device,
+  totalDevices = 1,
+}: LiveDashboardProps) {
   const [reading, setReading] = useState<Reading | null>(initialReading);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const supabase = createClient();
@@ -166,8 +171,9 @@ export function LiveDashboard({ initialReading, device }: LiveDashboardProps) {
   const lastSeenDate = readingDate ? readingDate.toLocaleDateString() : "";
 
   // Calculate device status based on last reading time
-  // Threshold: 60 seconds
-  const isOffline = !timeSinceReading || timeSinceReading > 60;
+  // Threshold: 60 seconds * totalDevices
+  const thresholdSec = 60 * totalDevices;
+  const isOffline = !timeSinceReading || timeSinceReading > thresholdSec;
 
   const statusColor = isOffline
     ? "bg-red-500/20 text-red-500"

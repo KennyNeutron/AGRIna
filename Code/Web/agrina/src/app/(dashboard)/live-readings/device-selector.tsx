@@ -21,16 +21,18 @@ interface Device {
 export function DeviceSelector({
   devices,
   selectedDeviceId,
+  baseUrl = "/live-readings",
 }: {
   devices: Device[];
   selectedDeviceId: string;
+  baseUrl?: string;
 }) {
   const router = useRouter();
   const selectedDevice =
     devices.find((d) => d.id === selectedDeviceId) || devices[0];
 
   const handleValueChange = (value: string) => {
-    router.push(`/live-readings?device=${value}`);
+    router.push(`${baseUrl}?device=${value}`);
   };
 
   if (!devices || devices.length === 0) {
