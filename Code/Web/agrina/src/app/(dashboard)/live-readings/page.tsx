@@ -41,6 +41,15 @@ export default async function LiveReadingsPage(props: {
     .limit(1)
     .single();
 
+  // Calculate status based on last reading (Shared logic with LiveDashboard)
+  // Dynamic Threshold: 1 minute * total devices
+  const totalDevices = devices?.length || 1;
+  const thresholdMs = totalDevices * 60 * 1000;
+
+  const isOnline =
+    latestReading?.recorded_at &&
+    Date.now() - new Date(latestReading.recorded_at).getTime() < thresholdMs;
+
   return (
     <div className="space-y-8 fade-in h-screen pb-20">
       {/* Header content */}
@@ -68,32 +77,32 @@ export default async function LiveReadingsPage(props: {
           </Button>
           <div
             className={`flex items-center gap-1.5 border px-3 py-1.5 rounded-lg ${
-              selectedDevice.status === "online"
+              isOnline
                 ? "bg-green-500/10 border-green-500/20"
                 : "bg-red-500/10 border-red-500/20"
             }`}
           >
             <div
               className={`h-2 w-2 rounded-full animate-pulse ${
-                selectedDevice.status === "online"
-                  ? "bg-green-500"
-                  : "bg-red-500"
+                isOnline ? "bg-green-500" : "bg-red-500"
               }`}
             />
             <span
               className={`text-xs font-medium ${
-                selectedDevice.status === "online"
-                  ? "text-green-500"
-                  : "text-red-500"
+                isOnline ? "text-green-500" : "text-red-500"
               }`}
             >
-              {selectedDevice.status === "online" ? "Online" : "Offline"}
+              {isOnline ? "Online" : "Offline"}
             </span>
           </div>
         </div>
       </div>
 
-      <LiveDashboard initialReading={latestReading} device={selectedDevice} />
+      <LiveDashboard
+        initialReading={latestReading}
+        device={selectedDevice}
+        totalDevices={totalDevices}
+      />
     </div>
   );
 }

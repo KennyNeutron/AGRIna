@@ -52,6 +52,21 @@ export default async function HomePage() {
     .from("sensor_readings")
     .select("*", { count: "exact", head: true }); // Maybe filter last 24h? For now total.
 
+  // Fetch unique devices that have sent data in the last 1 minute
+  // Fetch unique devices that have sent data in the last 1 minute * Total Devices
+  // Dynamic threshold: 1 minute per device in the system
+  const dynamicThresholdMs = (devicesCount || 1) * 60 * 1000;
+  const thresholdDate = new Date(Date.now() - dynamicThresholdMs).toISOString();
+
+  const { data: onlineReadings } = await supabase
+    .from("sensor_readings")
+    .select("device_id")
+    .gt("recorded_at", thresholdDate);
+
+  // Count unique device IDs for online count
+  const onlineDevicesCount = new Set(onlineReadings?.map((r) => r.device_id))
+    .size;
+
   // Fetch Latest Device Data (Single)
   const { data: latestReading } = await supabase
     .from("sensor_readings")
@@ -64,7 +79,7 @@ export default async function HomePage() {
     ? await supabase.from("profiles").select("*").eq("id", user.id).single()
     : { data: null };
 
-  const activeDeployments = 1; // Placeholder until deployments logic refined
+  const activeDeployments = devicesCount || 0; // Active Deployments = Total Devices
 
   // Safe defaults
   const deviceName = latestReading?.devices?.name || "No Device";
@@ -128,7 +143,7 @@ export default async function HomePage() {
               <Wifi className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <div className="text-2xl font-bold">{devicesCount || 0}</div>
+              <div className="text-2xl font-bold">{onlineDevicesCount}</div>
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 Online Devices
               </p>

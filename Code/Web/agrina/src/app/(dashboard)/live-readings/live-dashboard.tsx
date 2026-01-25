@@ -103,12 +103,18 @@ export function LiveDashboard({ initialReading, device }: LiveDashboardProps) {
           console.log("Realtime event received:", payload.new);
           setReading(payload.new as Reading);
           setLastUpdated(new Date());
-        }
+        },
       )
       .subscribe();
 
+    // Check offline status every 5 seconds
+    const statusInterval = setInterval(() => {
+      setNow(new Date()); // Force re-render relative times
+    }, 5000);
+
     return () => {
       clearInterval(interval);
+      clearInterval(statusInterval);
       supabase.removeChannel(channel);
     };
   }, [device.id, supabase]);
@@ -130,16 +136,56 @@ export function LiveDashboard({ initialReading, device }: LiveDashboardProps) {
     };
   };
 
+  const [now, setNow] = useState(new Date());
+
+  // Helper to parse timestamp safely (assume UTC if no offset)
+  const parseTimestamp = (ts: string | undefined) => {
+    if (!ts) return null;
+    // If it looks like ISO but has no Z and no offset, append Z
+    if (
+      ts.includes("T") &&
+      !ts.endsWith("Z") &&
+      !ts.includes("+") &&
+      !ts.includes("-")
+    ) {
+      return new Date(ts + "Z");
+    }
+    return new Date(ts);
+  };
+
+  const readingDate = parseTimestamp(reading?.recorded_at);
+  const timeSinceReading = readingDate
+    ? Math.floor((now.getTime() - readingDate.getTime()) / 1000)
+    : null;
+
   const phStatus = reading
     ? getPhStatus(reading.ph)
     : { label: "--", color: "text-muted", bg: "bg-muted", border: "bg-muted" };
 
-  const lastSeenTime = reading?.recorded_at
-    ? new Date(reading.recorded_at).toLocaleTimeString()
-    : "Never";
-  const lastSeenDate = reading?.recorded_at
-    ? new Date(reading.recorded_at).toLocaleDateString()
-    : "";
+  const lastSeenTime = readingDate ? readingDate.toLocaleTimeString() : "Never";
+  const lastSeenDate = readingDate ? readingDate.toLocaleDateString() : "";
+
+  // Calculate device status based on last reading time
+  // Threshold: 60 seconds
+  const isOffline = !timeSinceReading || timeSinceReading > 60;
+
+  const statusColor = isOffline
+    ? "bg-red-500/20 text-red-500"
+    : "bg-green-500/20 text-green-500";
+  const statusText = isOffline ? "OFFLINE" : "ONLINE";
+
+  const connectionStatus = isOffline ? (
+    <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
+      <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      Connection Offline (
+      {timeSinceReading ? `${Math.floor(timeSinceReading)}s ago` : "Never"})
+    </span>
+  ) : (
+    <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+      <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+      Live Data Connection Active ({Math.floor(timeSinceReading || 0)}s latency)
+    </span>
+  );
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -165,10 +211,7 @@ export function LiveDashboard({ initialReading, device }: LiveDashboardProps) {
                   <span>Firmware: {device.firmware_version || "Unknown"}</span>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                    Live Data Connection Active
-                  </span>
+                  {connectionStatus}
                 </div>
               </div>
             </div>
@@ -176,14 +219,10 @@ export function LiveDashboard({ initialReading, device }: LiveDashboardProps) {
             <div className="flex flex-col justify-between items-end gap-4">
               <div className="flex items-center gap-4">
                 <div
-                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                    device.status === "online"
-                      ? "bg-primary/20 text-primary"
-                      : "bg-red-500/20 text-red-500"
-                  }`}
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${statusColor}`}
                 >
                   <Wifi className="h-3 w-3" />
-                  {device.status.toUpperCase()}
+                  {statusText}
                 </div>
               </div>
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -194,11 +233,16 @@ export function LiveDashboard({ initialReading, device }: LiveDashboardProps) {
                   </span>
                 </span>
                 <span>
-                  updated{" "}
-                  {Math.floor(
-                    (new Date().getTime() - lastUpdated.getTime()) / 1000
-                  )}
-                  s ago
+                  Reading age:{" "}
+                  <span
+                    className={
+                      isOffline
+                        ? "text-red-500 font-bold"
+                        : "text-green-500 font-bold"
+                    }
+                  >
+                    {timeSinceReading !== null ? `${timeSinceReading}s` : "--"}
+                  </span>
                 </span>
               </div>
             </div>
