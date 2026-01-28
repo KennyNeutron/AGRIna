@@ -110,7 +110,13 @@ export default function HistoryPage() {
   const [devices, setDevices] = useState<any[]>([]);
   const [readings, setReadings] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [now, setNow] = useState(new Date());
   const supabase = createClient();
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchDevices = async () => {
     const { data } = await supabase
@@ -457,178 +463,213 @@ export default function HistoryPage() {
                 No deployments found. Add a new device to get started.
               </div>
             ) : (
-              devices.map((device: any) => (
-                <Card key={device.id} className="border-border">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row justify-between gap-6">
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" />
-                            {device.name}
-                          </h3>
-                          <p className="text-xs text-primary font-mono mt-1">
-                            {device.serial_number}
-                          </p>
-                        </div>
+              devices.map((device: any) => {
+                const lastSeen = device.last_seen
+                  ? new Date(device.last_seen)
+                  : null;
+                const isOffline =
+                  !lastSeen || now.getTime() - lastSeen.getTime() > 60000;
 
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <div className="w-4">
-                              <FileText className="h-3.5 w-3.5" />
-                            </div>
-                            <span>
-                              Device Status:{" "}
-                              <span className="text-foreground font-medium">
-                                {device.status}
-                              </span>
-                            </span>
+                return (
+                  <Card key={device.id} className="border-border">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row justify-between gap-6">
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-primary" />
+                              {device.name}
+                            </h3>
+                            <p className="text-xs text-primary font-mono mt-1">
+                              {device.serial_number}
+                            </p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-4"></div>
-                            <span>
-                              Sync:{" "}
-                              <span className="text-foreground font-medium">
-                                {device.auto_sync ? "Auto" : "Manual"}
-                              </span>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-4">
-                              <MapPin className="h-3.5 w-3.5" />
-                            </div>
-                            <span>Field Location: Active</span>
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="space-y-4 md:text-right">
-                        <div>
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-                              device.status === "Active"
-                                ? "border-green-500/20 bg-green-500/10 text-green-500"
-                                : "border-yellow-500/20 bg-yellow-500/10 text-yellow-500"
-                            }`}
-                          >
-                            {device.status}
-                          </span>
-                        </div>
-
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2 md:justify-end">
-                            <CalendarIcon className="h-3.5 w-3.5" />
-                            <span>
-                              Added:{" "}
-                              {new Date(device.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 md:justify-end">
-                            <TrendingUp className="h-3.5 w-3.5" />
-                            <span>
-                              Interval: {device.update_interval_seconds}s
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <Separator className="my-6" />
-                    <div className="grid md:grid-cols-3 gap-6">
-                      <div>
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                          System Info
-                        </h4>
-                        <div className="space-y-1 text-sm">
-                          <p className="text-foreground">
-                            <span className="text-muted-foreground">
-                              Firmware:
-                            </span>{" "}
-                            {device.firmware_version || "1.0.0"}
-                          </p>
-                          <p className="text-foreground">
-                            <span className="text-muted-foreground">
-                              Last Seen:
-                            </span>{" "}
-                            {device.last_seen
-                              ? new Date(device.last_seen).toLocaleString()
-                              : "Never"}
-                          </p>
-                          <p className="text-foreground">
-                            <span className="text-muted-foreground">ID:</span>{" "}
-                            <span className="text-xs font-mono">
-                              {device.id.slice(0, 8)}...
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                          Deployment Details
-                        </h4>
-                        <div className="space-y-1 text-sm">
-                          <p className="text-foreground">
-                            <span className="text-muted-foreground">
-                              Owner:
-                            </span>{" "}
-                            {device.lot_owner || "N/A"}
-                          </p>
-                          <p className="text-foreground">
-                            <span className="text-muted-foreground">Crop:</span>{" "}
-                            {device.crop_type || "N/A"}
-                          </p>
-                          <p className="text-foreground">
-                            <span className="text-muted-foreground">
-                              Period:
-                            </span>{" "}
-                            {device.start_date
-                              ? new Date(device.start_date).toLocaleDateString()
-                              : "???"}{" "}
-                            -{" "}
-                            {device.end_date
-                              ? new Date(device.end_date).toLocaleDateString()
-                              : "Present"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                          Field Specs
-                        </h4>
-                        <div className="space-y-1 text-sm">
-                          {device.coordinates && (
-                            <p className="text-foreground flex items-center gap-1">
-                              <MapPin className="h-3 w-3 text-muted-foreground" />
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4">
+                                <FileText className="h-3.5 w-3.5" />
+                              </div>
                               <span>
-                                {typeof device.coordinates === "string"
-                                  ? device.coordinates
-                                  : `${device.coordinates.lat || 0}, ${device.coordinates.lng || 0}`}
+                                Connection Status:{" "}
+                                <span
+                                  className={
+                                    isOffline
+                                      ? "text-red-500 font-medium"
+                                      : "text-green-500 font-medium"
+                                  }
+                                >
+                                  {isOffline ? "Offline" : "Online"}
+                                </span>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4">
+                                <Clock className="h-3.5 w-3.5" />
+                              </div>
+                              <span>
+                                Last Update:{" "}
+                                <span className="text-foreground font-medium">
+                                  {device.last_seen
+                                    ? `${Math.floor((now.getTime() - new Date(device.last_seen).getTime()) / 1000)}s ago`
+                                    : "Never"}
+                                </span>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4"></div>
+                              <span>
+                                Sync:{" "}
+                                <span className="text-foreground font-medium">
+                                  {device.auto_sync ? "Auto" : "Manual"}
+                                </span>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4">
+                                <MapPin className="h-3.5 w-3.5" />
+                              </div>
+                              <span>Field Location: Active</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4 md:text-right">
+                          <div>
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                                !isOffline
+                                  ? "border-green-500/20 bg-green-500/10 text-green-500"
+                                  : "border-red-500/20 bg-red-500/10 text-red-500"
+                              }`}
+                            >
+                              {isOffline ? "OFFLINE" : "ONLINE"}
+                            </span>
+                          </div>
+
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2 md:justify-end">
+                              <CalendarIcon className="h-3.5 w-3.5" />
+                              <span>
+                                Added:{" "}
+                                {new Date(
+                                  device.created_at,
+                                ).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 md:justify-end">
+                              <TrendingUp className="h-3.5 w-3.5" />
+                              <span>
+                                Interval: {device.update_interval_seconds}s
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <Separator className="my-6" />
+                      <div className="grid md:grid-cols-3 gap-6">
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                            System Info
+                          </h4>
+                          <div className="space-y-1 text-sm">
+                            <p className="text-foreground">
+                              <span className="text-muted-foreground">
+                                Firmware:
+                              </span>{" "}
+                              {device.firmware_version || "1.0.0"}
+                            </p>
+                            <p className="text-foreground">
+                              <span className="text-muted-foreground">
+                                Last Seen:
+                              </span>{" "}
+                              {device.last_seen
+                                ? new Date(device.last_seen).toLocaleString()
+                                : "Never"}
+                            </p>
+                            <p className="text-foreground">
+                              <span className="text-muted-foreground">ID:</span>{" "}
+                              <span className="text-xs font-mono">
+                                {device.id.slice(0, 8)}...
                               </span>
                             </p>
-                          )}
-                          <p className="text-foreground line-clamp-2">
-                            <span className="text-muted-foreground">Desc:</span>{" "}
-                            {device.field_description ||
-                              "No description provided."}
-                          </p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                            Deployment Details
+                          </h4>
+                          <div className="space-y-1 text-sm">
+                            <p className="text-foreground">
+                              <span className="text-muted-foreground">
+                                Owner:
+                              </span>{" "}
+                              {device.lot_owner || "N/A"}
+                            </p>
+                            <p className="text-foreground">
+                              <span className="text-muted-foreground">
+                                Crop:
+                              </span>{" "}
+                              {device.crop_type || "N/A"}
+                            </p>
+                            <p className="text-foreground">
+                              <span className="text-muted-foreground">
+                                Period:
+                              </span>{" "}
+                              {device.start_date
+                                ? new Date(
+                                    device.start_date,
+                                  ).toLocaleDateString()
+                                : "???"}{" "}
+                              -{" "}
+                              {device.end_date
+                                ? new Date(device.end_date).toLocaleDateString()
+                                : "Present"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                            Field Specs
+                          </h4>
+                          <div className="space-y-1 text-sm">
+                            {device.coordinates && (
+                              <p className="text-foreground flex items-center gap-1">
+                                <MapPin className="h-3 w-3 text-muted-foreground" />
+                                <span>
+                                  {typeof device.coordinates === "string"
+                                    ? device.coordinates
+                                    : `${device.coordinates.lat || 0}, ${device.coordinates.lng || 0}`}
+                                </span>
+                              </p>
+                            )}
+                            <p className="text-foreground line-clamp-2">
+                              <span className="text-muted-foreground">
+                                Desc:
+                              </span>{" "}
+                              {device.field_description ||
+                                "No description provided."}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {device.notes && (
-                      <div className="mt-4 p-3 bg-muted/50 rounded-md border border-border/50">
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                          Notes
-                        </h4>
-                        <p className="text-sm text-foreground italic">
-                          "{device.notes}"
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
+                      {device.notes && (
+                        <div className="mt-4 p-3 bg-muted/50 rounded-md border border-border/50">
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                            Notes
+                          </h4>
+                          <p className="text-sm text-foreground italic">
+                            "{device.notes}"
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </div>
         </TabsContent>
