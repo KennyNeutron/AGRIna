@@ -123,7 +123,7 @@ export default function HistoryPage() {
   const fetchReadings = async () => {
     let query = supabase
       .from("sensor_readings")
-      .select("*, devices(name, serial_number)")
+      .select("*, devices(name, serial_number, lot_owner, crop_type)")
       .order("recorded_at", { ascending: true }); // Ascending for chart
 
     // Apply time filter
@@ -224,7 +224,7 @@ export default function HistoryPage() {
 
       {/* Filters */}
       <Card className="bg-card border-border shadow-sm">
-        <CardContent className="p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-5 items-end">
+        <CardContent className="p-4 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-end">
           <div className="space-y-2 col-span-1 lg:col-span-1">
             <label className="text-xs font-medium text-muted-foreground">
               Search
@@ -253,21 +253,6 @@ export default function HistoryPage() {
                     {d.name}
                   </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-muted-foreground">
-              Deployment
-            </label>
-            <Select defaultValue="all">
-              <SelectTrigger>
-                <SelectValue placeholder="All Deployments" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Deployments</SelectItem>
-                <SelectItem value="active">Active Only</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -548,26 +533,99 @@ export default function HistoryPage() {
                       </div>
                     </div>
                     <Separator className="my-6" />
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid md:grid-cols-3 gap-6">
                       <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                          System Info:
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                          System Info
                         </h4>
-                        <p className="text-sm text-foreground">
-                          Firmware: {device.firmware_version || "Unknown"}
-                        </p>
+                        <div className="space-y-1 text-sm">
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">
+                              Firmware:
+                            </span>{" "}
+                            {device.firmware_version || "1.0.0"}
+                          </p>
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">
+                              Last Seen:
+                            </span>{" "}
+                            {device.last_seen
+                              ? new Date(device.last_seen).toLocaleString()
+                              : "Never"}
+                          </p>
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">ID:</span>{" "}
+                            <span className="text-xs font-mono">
+                              {device.id.slice(0, 8)}...
+                            </span>
+                          </p>
+                        </div>
                       </div>
+
                       <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-2">
-                          Last Seen:
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                          Deployment Details
                         </h4>
-                        <p className="text-sm text-foreground">
-                          {device.last_seen
-                            ? new Date(device.last_seen).toLocaleString()
-                            : "Never"}
-                        </p>
+                        <div className="space-y-1 text-sm">
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">
+                              Owner:
+                            </span>{" "}
+                            {device.lot_owner || "N/A"}
+                          </p>
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">Crop:</span>{" "}
+                            {device.crop_type || "N/A"}
+                          </p>
+                          <p className="text-foreground">
+                            <span className="text-muted-foreground">
+                              Period:
+                            </span>{" "}
+                            {device.start_date
+                              ? new Date(device.start_date).toLocaleDateString()
+                              : "???"}{" "}
+                            -{" "}
+                            {device.end_date
+                              ? new Date(device.end_date).toLocaleDateString()
+                              : "Present"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                          Field Specs
+                        </h4>
+                        <div className="space-y-1 text-sm">
+                          {device.coordinates && (
+                            <p className="text-foreground flex items-center gap-1">
+                              <MapPin className="h-3 w-3 text-muted-foreground" />
+                              <span>
+                                {typeof device.coordinates === "string"
+                                  ? device.coordinates
+                                  : `${device.coordinates.lat || 0}, ${device.coordinates.lng || 0}`}
+                              </span>
+                            </p>
+                          )}
+                          <p className="text-foreground line-clamp-2">
+                            <span className="text-muted-foreground">Desc:</span>{" "}
+                            {device.field_description ||
+                              "No description provided."}
+                          </p>
+                        </div>
                       </div>
                     </div>
+
+                    {device.notes && (
+                      <div className="mt-4 p-3 bg-muted/50 rounded-md border border-border/50">
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                          Notes
+                        </h4>
+                        <p className="text-sm text-foreground italic">
+                          "{device.notes}"
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))
@@ -652,9 +710,11 @@ export default function HistoryPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="text-xs font-medium">--</span>
+                          <span className="text-xs font-medium">
+                            {log.devices?.lot_owner || "N/A"}
+                          </span>
                           <span className="text-[10px] text-muted-foreground line-clamp-1 max-w-[200px]">
-                            --
+                            {log.devices?.crop_type || "N/A"}
                           </span>
                         </div>
                       </TableCell>
