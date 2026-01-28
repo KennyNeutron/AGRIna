@@ -15,8 +15,22 @@ export async function createDevice(formData: FormData) {
   );
   const auto_sync = formData.get("auto_sync") === "on";
 
+  const lot_owner = formData.get("lot_owner") as string;
+  const start_date = formData.get("start_date") as string; // Will need conversion if it's empty string
+  const end_date = formData.get("end_date") as string;
+  const lat = formData.get("lat") as string;
+  const lng = formData.get("lng") as string;
+  const crop_type = formData.get("crop_type") as string;
+  const field_description = formData.get("field_description") as string;
+  const notes = formData.get("notes") as string;
+
   if (!name || !serial_number) {
     return { error: "Name and Serial Number are required" };
+  }
+
+  let coordinates = null;
+  if (lat && lng) {
+    coordinates = { lat: parseFloat(lat), lng: parseFloat(lng) };
   }
 
   const { data, error } = await supabase
@@ -28,6 +42,14 @@ export async function createDevice(formData: FormData) {
       firmware_version: firmware_version || "1.0.0",
       update_interval_seconds,
       auto_sync,
+      // New fields
+      lot_owner: lot_owner || null,
+      start_date: start_date || null,
+      end_date: end_date || null,
+      coordinates: coordinates,
+      field_description: field_description || null,
+      crop_type: crop_type || null,
+      notes: notes || null,
       // last_seen will be null initially
     })
     .select()
