@@ -10,35 +10,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-  Settings,
-  User,
-  Smartphone,
-  Bell,
-  Database,
-  Shield,
-  RotateCcw,
-  Save,
-  Wifi,
-  Activity,
-  Users,
-  Plus,
-  Loader2,
-} from "lucide-react";
+
+import { Settings, User, RotateCcw, Save, Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";
-import {
-  updateProfile,
-  updateDeviceSettings,
-  updateUserPreferences,
-} from "./actions";
+import { updateProfile, updateDeviceSettings } from "./actions";
 
 interface SettingsViewProps {
   profile: any;
@@ -60,26 +35,12 @@ export function SettingsView({
   // Device State
   const [deviceName, setDeviceName] = useState(device?.name || "");
   const [updateInterval, setUpdateInterval] = useState(
-    device?.update_interval_seconds?.toString() || "30"
+    device?.update_interval_seconds?.toString() || "30",
   );
   const [tempUnit, setTempUnit] = useState(
-    device?.temperature_unit || "celsius"
+    device?.temperature_unit || "celsius",
   );
   const [autoSync, setAutoSync] = useState(device?.auto_sync ?? true);
-
-  // Preferences State
-  const [alertsEnabled, setAlertsEnabled] = useState(
-    preferences?.alerts_enabled ?? true
-  );
-  const [emailNotifications, setEmailNotifications] = useState(
-    preferences?.email_notifications ?? true
-  );
-  const [dataRetention, setDataRetention] = useState(
-    preferences?.data_retention_days?.toString() || "365"
-  );
-  const [timezone, setTimezone] = useState(
-    preferences?.timezone || "asia_manila"
-  );
 
   const handleSave = () => {
     startTransition(async () => {
@@ -100,13 +61,9 @@ export function SettingsView({
         await updateDeviceSettings(deviceData);
       }
 
-      // 3. Update Preferences
-      const prefData = new FormData();
-      if (alertsEnabled) prefData.append("alertsEnabled", "on");
-      if (emailNotifications) prefData.append("emailNotifications", "on");
-      prefData.append("dataRetention", dataRetention);
-      prefData.append("timezone", timezone);
-      await updateUserPreferences(prefData);
+      // 3. Update Preferences (Removed)
+      // const prefData = new FormData();
+      // await updateUserPreferences(prefData);
 
       alert("Settings saved successfully!");
     });
@@ -168,92 +125,6 @@ export function SettingsView({
             </div>
             <Button variant="outline" className="w-full bg-background">
               Edit Profile
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Notifications */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg text-emerald-700 dark:text-emerald-500">
-              <Bell className="h-5 w-5" /> Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Enable Alerts</Label>
-                <p className="text-xs text-muted-foreground">
-                  Receive alerts for critical conditions
-                </p>
-              </div>
-              <Switch
-                checked={alertsEnabled}
-                onCheckedChange={setAlertsEnabled}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Email Notifications</Label>
-                <p className="text-xs text-muted-foreground">
-                  Send alerts via email
-                </p>
-              </div>
-              <Switch
-                checked={emailNotifications}
-                onCheckedChange={setEmailNotifications}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Data Management */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg text-emerald-700 dark:text-emerald-500">
-              <Database className="h-5 w-5" /> Data Management
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-2">
-              <Label>Data Retention (days)</Label>
-              <Select
-                value={dataRetention}
-                onValueChange={(v) => setDataRetention(v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select retention" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="30">30 Days</SelectItem>
-                  <SelectItem value="90">90 Days</SelectItem>
-                  <SelectItem value="365">1 Year</SelectItem>
-                  <SelectItem value="730">2 Years</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Time Zone</Label>
-              <Select value={timezone} onValueChange={(v) => setTimezone(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select timezone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="utc">UTC (GMT+0)</SelectItem>
-                  <SelectItem value="asia_manila">
-                    Asia/Manila (GMT+8)
-                  </SelectItem>
-                  <SelectItem value="america_new_york">
-                    New York (GMT-5)
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full gap-2 bg-background mt-2"
-            >
-              <Database className="h-4 w-4" /> Export All Data
             </Button>
           </CardContent>
         </Card>
