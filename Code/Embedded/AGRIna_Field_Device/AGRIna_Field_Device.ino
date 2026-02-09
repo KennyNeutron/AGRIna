@@ -15,6 +15,9 @@ static const int PIN_LORA_DIO0 = 2;
 // Change to 868E6 or 915E6 if you use those bands.
 static const long LORA_FREQUENCY = 433E6;
 
+// Device ID
+static const uint8_t MY_DEVICE_ID = 0x01;
+
 // Send every N ms
 static const uint32_t TX_INTERVAL_MS = 1000UL;
 uint32_t lastTx = 0;
@@ -40,7 +43,7 @@ void setup() {
   // Set initial values for the struct (for now, static demo values)
   // Tip: Header/Footer can be used for quick packet framing checks
   Data_AGRIna.Header = 0x55;
-  Data_AGRIna.AN_DeviceID = 0x01;
+  Data_AGRIna.AN_DeviceID = MY_DEVICE_ID;
   //   Data_AGRIna.AN_SoilTemperature = 27.5f;
   //   Data_AGRIna.AN_pH = 6.80f;
   //   Data_AGRIna.AN_Nitrogen = 20;  // mg/kg or your chosen unit
@@ -74,6 +77,27 @@ void setup() {
 
 void loop() {
   SoilSensor_loop();
+
+  // Check for incoming packets (Repeater Logic)
+  int packetSize = LoRa.parsePacket();
+  if (packetSize == sizeof(AGRInaData)) {
+    AGRInaData receivedData;
+    LoRa.readBytes((uint8_t*)&receivedData, sizeof(receivedData));
+
+    // Validate Header, Footer and ensure it's not from us
+    if (receivedData.Header == 0x55 && receivedData.Footer == 0xAA && receivedData.AN_DeviceID != MY_DEVICE_ID) {
+      Serial.print(F("Repeater: RX from 0x"));
+      Serial.println(receivedData.AN_DeviceID, HEX);
+
+      delay(random(50, 200));  // Random delay to minimize collisions
+
+      LoRa.beginPacket();
+      LoRa.write((uint8_t*)&receivedData, sizeof(receivedData));
+      LoRa.endPacket();
+
+      Serial.println(F("Repeater: Fwd done."));
+    }
+  }
 
   const uint32_t now = millis();
   if (now - lastTx >= TX_INTERVAL_MS) {

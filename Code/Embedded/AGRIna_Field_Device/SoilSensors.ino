@@ -312,6 +312,11 @@ void SoilSensor_setup() {
 }
 
 void SoilSensor_loop() {
+// Non-blocking timer
+  static uint32_t lastDoc = 0;
+  if (millis() - lastDoc < 2000) return;
+  lastDoc = millis();
+
   // ---- NPK ----
   uint16_t n, p, k;
   if (readNPK(n, p, k)) {
@@ -355,5 +360,5 @@ void SoilSensor_loop() {
   Data_AGRIna.AN_Phosphorus = p;
   Data_AGRIna.AN_Potassium = k;
 
-  delay(2000);
+ // delay(2000); // Removed for non-blocking behavior
 }
