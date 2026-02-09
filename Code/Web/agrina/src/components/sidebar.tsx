@@ -8,7 +8,6 @@ import {
   Home,
   Activity,
   History,
-  Download,
   Settings,
   Info,
   LogOut,
@@ -36,12 +35,7 @@ const navItems = [
     icon: History,
     description: "View historical data, trends, and deployment records",
   },
-  {
-    href: "/export",
-    label: "Export Data",
-    icon: Download,
-    description: "Download your data in CSV or PDF format",
-  },
+
   {
     href: "/settings",
     label: "Settings",
@@ -124,7 +118,7 @@ export function Sidebar({ profile }: SidebarProps) {
                 "group flex items-start gap-4 rounded-xl p-3 transition-colors hover:bg-muted/50",
                 isActive
                   ? "bg-primary/10 hover:bg-primary/15"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground",
               )}
             >
               <div
@@ -132,7 +126,7 @@ export function Sidebar({ profile }: SidebarProps) {
                   "mt-0.5 rounded-lg p-2 transition-colors",
                   isActive
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground group-hover:bg-muted-foreground/20"
+                    : "bg-muted text-muted-foreground group-hover:bg-muted-foreground/20",
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -141,7 +135,7 @@ export function Sidebar({ profile }: SidebarProps) {
                 <div
                   className={cn(
                     "font-medium",
-                    isActive ? "text-primary" : "text-foreground"
+                    isActive ? "text-primary" : "text-foreground",
                   )}
                 >
                   {item.label}
