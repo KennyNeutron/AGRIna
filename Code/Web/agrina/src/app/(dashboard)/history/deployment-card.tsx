@@ -17,6 +17,8 @@ import {
   TrendingUp,
   ArrowRight,
 } from "lucide-react";
+import { useState } from "react";
+import { DeploymentDetailsDialog } from "./deployment-details-dialog";
 
 interface DeploymentCardProps {
   device: any;
@@ -32,6 +34,7 @@ export function DeploymentCard({ device, readings, now }: DeploymentCardProps) {
   );
   const latestReading = sortedReadings[0];
   const totalReadings = readings.length;
+  const [openDetails, setOpenDetails] = useState(false);
 
   // Status Logic
   const lastSeen = device.last_seen ? new Date(device.last_seen) : null;
@@ -93,7 +96,12 @@ export function DeploymentCard({ device, readings, now }: DeploymentCardProps) {
             >
               {isActive ? "Active" : "Completed"}
             </Badge>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => setOpenDetails(true)}
+            >
               <FileText className="h-4 w-4" /> View Full Record
             </Button>
           </div>
@@ -406,7 +414,10 @@ export function DeploymentCard({ device, readings, now }: DeploymentCardProps) {
           </div>
         </div>
 
-        <div className="bg-muted/40 border-t border-border px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-muted/60 transition-colors">
+        <div
+          className="bg-muted/40 border-t border-border px-4 py-2 flex justify-between items-center cursor-pointer hover:bg-muted/60 transition-colors"
+          onClick={() => setOpenDetails(true)}
+        >
           <span className="text-xs font-medium flex items-center gap-2">
             <FileText className="h-3.5 w-3.5" /> View All {totalReadings}{" "}
             Records (Ready to Export)
@@ -414,6 +425,13 @@ export function DeploymentCard({ device, readings, now }: DeploymentCardProps) {
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
       </CardContent>
+
+      <DeploymentDetailsDialog
+        device={device}
+        readings={readings}
+        open={openDetails}
+        onOpenChange={setOpenDetails}
+      />
     </Card>
   );
 }
