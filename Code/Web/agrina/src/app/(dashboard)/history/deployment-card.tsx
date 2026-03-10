@@ -291,9 +291,6 @@ export function DeploymentCard({ device, readings, now }: DeploymentCardProps) {
                   </span>
                 </div>
               </div>
-              <div className="w-full bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-[10px] font-semibold text-center py-1 rounded">
-                Optimal for Rice
-              </div>
             </div>
 
             {/* Temp Card */}
@@ -314,9 +311,6 @@ export function DeploymentCard({ device, readings, now }: DeploymentCardProps) {
                     {tempStats.min}°C - {tempStats.max}°C
                   </span>
                 </div>
-              </div>
-              <div className="w-full bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-[10px] font-semibold text-center py-1 rounded">
-                Optimal Range
               </div>
             </div>
 

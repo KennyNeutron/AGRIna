@@ -296,10 +296,6 @@ export function LiveDashboard({
                 <span>14</span>
               </div>
             </div>
-
-            <div className="text-[10px] text-muted-foreground border-t border-border pt-2">
-              Rice Optimal: 6.0 - 7.0
-            </div>
           </CardContent>
         </Card>
 
@@ -338,9 +334,6 @@ export function LiveDashboard({
                 <span>25°C</span>
                 <span>50°C</span>
               </div>
-            </div>
-            <div className="text-[10px] text-muted-foreground border-t border-border pt-2">
-              Rice Optimal: 25-30°C
             </div>
           </CardContent>
         </Card>
@@ -388,9 +381,6 @@ export function LiveDashboard({
                 <span className="text-[10px] text-muted-foreground">ppm</span>
                 <div className="h-2 w-2 rounded-full bg-green-500" />
               </div>
-            </div>
-            <div className="text-[10px] text-muted-foreground pt-2">
-              Optimal Ranges: N: 40-60, P: 20-35, K: 150-250 ppm
             </div>
           </CardContent>
         </Card>
