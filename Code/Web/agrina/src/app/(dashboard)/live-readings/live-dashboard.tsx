@@ -9,8 +9,6 @@ import {
   Droplets,
   Wind,
   Zap,
-  CheckCircle,
-  AlertCircle,
   Clock,
   Cpu,
   Wifi,
@@ -396,54 +394,6 @@ export function LiveDashboard({
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Recommendations */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-green-500/10">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-          </div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground">
-            Smart Recommendations for {device.name}
-          </h2>
-        </div>
-
-        <Card className="bg-green-500/5 border-green-500/20">
-          <CardContent className="p-4 flex gap-4">
-            <div className="mt-1">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-green-600 dark:text-green-400">
-                pH Status: Optimal
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Current pH level of {reading?.ph} is within optimal range
-                (6.0-7.0) for rice cultivation. Continue current soil management
-                practices.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {reading && (reading.ph < 6 || reading.ph > 7) && (
-          <Card className="bg-yellow-500/5 border-yellow-500/20">
-            <CardContent className="p-4 flex gap-4">
-              <div className="mt-1">
-                <AlertCircle className="h-5 w-5 text-yellow-500" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-yellow-600 dark:text-yellow-400">
-                  pH Warning
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  pH is outside optimal range. Consider soil amendment.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
