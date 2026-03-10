@@ -59,9 +59,9 @@ export function DeploymentDetailsDialog({
       "Lot Owner",
       "pH",
       "Temperature (C)",
-      "Nitrogen (mg/kg)",
-      "Phosphorus (mg/kg)",
-      "Potassium (mg/kg)",
+      "Nitrogen (ppm)",
+      "Phosphorus (ppm)",
+      "Potassium (ppm)",
     ];
 
     const rows = sortedReadings.map((r) => [

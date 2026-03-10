@@ -330,15 +330,19 @@ export function DeploymentCard({ device, readings, now }: DeploymentCardProps) {
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Nitrogen (N):</span>
-                  <span className="font-medium">{nStats.avg} mg/kg</span>
+                  <span className="font-medium">{nStats.avg} ppm</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Phosphorus (P):</span>
-                  <span className="font-medium">{pStats.avg} mg/kg</span>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground mr-4">
+                    Avg Phosphorus
+                  </span>
+                  <span className="font-medium">{pStats.avg} ppm</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Potassium (K):</span>
-                  <span className="font-medium">{kStats.avg} mg/kg</span>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground mr-4">
+                    Avg Potassium
+                  </span>
+                  <span className="font-medium">{kStats.avg} ppm</span>
                 </div>
                 <Separator className="my-2" />
                 <div className="flex justify-between">

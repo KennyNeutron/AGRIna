@@ -46,9 +46,9 @@ High-frequency time-series data captured by the devices.
 | `deployment_id`  | `uuid`                     | FK -> `deployments.id`       | Optional link to specific deployment period.        |
 | `ph`             | `decimal(4,2)`             |                              | Soil pH level (0.00 - 14.00).                       |
 | `temperature`    | `decimal(5,2)`             |                              | Soil/Ambient temperature.                           |
-| `nitrogen`       | `decimal(6,2)`             |                              | Nitrogen level (mg/kg).                             |
-| `phosphorus`     | `decimal(6,2)`             |                              | Phosphorus level (mg/kg).                           |
-| `potassium`      | `decimal(6,2)`             |                              | Potassium level (mg/kg).                            |
+| `nitrogen`       | `decimal(6,2)`             |                              | Nitrogen level (ppm).                               |
+| `phosphorus`     | `decimal(6,2)`             |                              | Phosphorus level (ppm).                             |
+| `potassium`      | `decimal(6,2)`             |                              | Potassium level (ppm).                              |
 | `signal_quality` | `integer`                  |                              | WiFi/LoRa signal strength (RSSI or %) if available. |
 | `recorded_at`    | `timestamp with time zone` | Default: `now()`             | The actual timestamp when the data was sensed.      |
 

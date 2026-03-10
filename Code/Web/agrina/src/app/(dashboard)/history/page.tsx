@@ -82,7 +82,7 @@ const parameterConfig: Record<
     label: "Nitrogen",
     key: "n",
     domain: [30, 60],
-    unit: " mg/kg",
+    unit: " ppm",
     color: "#eab308",
     icon: Leaf,
   },
@@ -90,7 +90,7 @@ const parameterConfig: Record<
     label: "Phosphorus",
     key: "p",
     domain: [20, 40],
-    unit: " mg/kg",
+    unit: " ppm",
     color: "#f97316",
     icon: Droplets,
   },
@@ -98,7 +98,7 @@ const parameterConfig: Record<
     label: "Potassium",
     key: "k",
     domain: [150, 200],
-    unit: " mg/kg",
+    unit: " ppm",
     color: "#8b5cf6",
     icon: Leaf,
   },
@@ -554,9 +554,9 @@ export default function HistoryPage() {
                   <TableHead>Lot Owner</TableHead>
                   <TableHead>pH Level</TableHead>
                   <TableHead>Temp (°C)</TableHead>
-                  <TableHead>N (mg/kg)</TableHead>
-                  <TableHead>P (mg/kg)</TableHead>
-                  <TableHead>K (mg/kg)</TableHead>
+                  <TableHead>N (ppm)</TableHead>
+                  <TableHead>P (ppm)</TableHead>
+                  <TableHead>K (ppm)</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
